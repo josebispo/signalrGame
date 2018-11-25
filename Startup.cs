@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SignalRSimpleChat
+namespace JogoDaForca
 {
     public class Startup
     {
@@ -28,7 +28,7 @@ namespace SignalRSimpleChat
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Chat>("/chat");
+                routes.MapHub<Game>("/jogo");
             });
 
             app.UseMvcWithDefaultRoute();

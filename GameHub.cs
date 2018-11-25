@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
-namespace SignalRSimpleChat
+namespace JogoDaForca
 {
-    public class Chat : Hub
+    public class Game : Hub
     {      
         public async Task Send(string nick, string message)
         {

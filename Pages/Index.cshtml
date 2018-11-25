@@ -1,50 +1,72 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+ViewData["Title"] = "Jogo da Memoria";
 }
 
-<script>
-    function continueToChat() {
-        $('#spn-nick').text($('#nick').val());
-        $('#entrance').hide();
-        $('#chat').show();
-    }
-</script>
+
 <div class="form-group">
     &nbsp;
 </div>
-
-<div id="entrance">
-    <label for="nick">Enter your nickname:</label>
-    <input type="text" id="nick" />
-    <button onclick="continueToChat()">Continue</button>
-</div>
-
-<div id="chat" style="display: none">
+<div id="game" style="display: none">
+    <h4>Pontos = <strong id="point">100</strong></h4>
+    <div style="
+    border-style: solid;
+    border-width: 2px;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+    ">
+        <strong>
+            A cada palavra informada sera descontado um valor de 5 pontos do seu total de pontos<br>
+            A cada solicitação de Dica será descontado um valor de 20 pontos do seu total de pontos<br>
+            Ganha quem acertar a palavra e tiver mais pontos ou quem perder todos os pontos primeiro<br>
+        </strong>
+    </div>
     <h3 id="spn-nick"></h3>
     <form id="frm-send-message" action="#">
-        <label for="message">Message:</label>
+        <label for="message">Palavra:</label>
         <input type="text" id="message" />
         <input type="submit" id="send" value="Send" class="send" />
+        <button id="dica"  onclick="getTip()">Solicitar Dica</button>
     </form>
     <div class="clear">
     </div>
     <ul id="messages"></ul>
 </div>
-
+<div id="entrance">
+    <label for="nick">Qual é o seu nome:</label>
+    <input type="text" id="nick" />
+    <button onclick="continueToGame()">Avançar</button>
+</div>
 <script src="lib/signalr/signalr.min.js"></script>
-
 <script>
-    
+    var count = 0;
+    var points = 100;
+    var right_word;
+
+
+    /** Function receive the name and show the message field **/
+
+    function continueToGame() {
+        $('#spn-nick').text($('#nick').val());
+        $('#entrance').hide();
+        $('#game').show();
+
+        // show the first tip
+        word();
+    }
+
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/chat")
+        .withUrl("/jogo")
         .build();
 
     connection.start().catch(err => console.error(err.toString()));
-    
+
     connection.on('Send', (nick, message) => {
-        appendLine(nick, message);    
+
+        appendLine(nick, message);
+
     });
 
     document.getElementById('frm-send-message').addEventListener('submit', event => {
@@ -52,23 +74,104 @@
         let nick = $('#spn-nick').text();
 
         $('#message').val('');
-    
-        connection.invoke('Send', nick, message);   
+
+        connection.invoke('Send', nick, message);
         event.preventDefault();
     });
 
-    function appendLine(nick, message, color) {  
-        let nameElement = document.createElement('strong');      
+    function appendLine(nick, message) {
+
+     if(message.toLowerCase() == right_word && points > 0){
+            alert('Jogador '+ nick + ' Voce Venceu!');
+
+            message = 'Jogador '+ nick +' venceu!';
+            nick = 'Vencerdor';
+
+            $('#frm-send-message').hide();
+
+        }else{
+        if(count != 0){
+            points = points - 5;
+            document.getElementById("point").innerHTML = points;
+        }
+   
+        
+        }
+        
+
+        let nameElement = document.createElement('strong');
         nameElement.innerText = `${nick}:`;
+
 
         let msgElement = document.createElement('em');
         msgElement.innerText = ` ${message}`;
 
+       // console.log('Palavra Digitada:'+message.toLowerCase());
+       // console.log('Palavra Armazenada : '+right_word);
+
+
         let li = document.createElement('li');
         li.appendChild(nameElement);
         li.appendChild(msgElement);
-       
+
         $('#messages').append(li);
     };
 
-</script>
+    function word() {
+
+        var questions, x, number_question = 0;
+
+
+        questions = [
+            {
+                "id": 2,
+                "word": "cachorro",
+                "dicas": ["Sou muito brincalhão!", "Sou um animal!", "Sei fazer um barulho de alerta!"]
+            },
+            {
+                "id": 1,
+                "word": "apple",
+                "dicas": ["Sou uma marca!", "Fui criada no vale do Silicío", "Meus produtos såo caros"]
+            },
+            {
+                "id": 0,
+                "word": "marlon",
+                "dicas": ["Sou professor da UCL!", "Tenho quarenta de Braço!", "Era cabeludo"]
+            },
+
+        ];
+        x = questions[0].dicas;
+        right_word = questions[0].word;
+
+
+        appendLine('Primeira Dica é: ', x[count]);
+        count = count + 1;
+        console.log(count);
+
+        localStorage.setItem('dicas', JSON.stringify(x));
+
+    };
+
+    function getTip() {
+
+        // Retrieve the object from storage
+        // var retrievedObj = localStorage.getItem('dicas');
+        var tipstips = JSON.parse(localStorage.getItem("dicas"));
+
+        //console.log(tipstips[1]);
+
+
+        if (count < 3) {
+
+            // inform the tip and remove point from gamer
+            appendLine('Dica: ', tipstips[1], points = points - 20);
+            document.getElementById("point").innerHTML = points;
+            count++;
+
+        } else {
+            appendLine('Dica ', 'Acabou as dicas malandro',0);
+        }
+
+        console.log('final' + count);
+
+    };</script>

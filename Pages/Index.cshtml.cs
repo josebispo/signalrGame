@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SignalRSimpleChat.Pages
+namespace JogoDaForca.Pages
 {
     public class IndexModel : PageModel
     {
